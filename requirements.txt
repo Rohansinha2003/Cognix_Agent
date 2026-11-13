@@ -1,0 +1,8 @@
+anthropic>=2.8        # Claude API (online engine)
+openai>=3.50          # OpenAI-compatible client for LM Studio (local engine)
+faster-whisper>=1.2   # on-device speech recognition
+sounddevice>=0.5      # microphone capture (bundles PortAudio)
+numpy>=2.0
+pywebview>=6.2        # native window
+keyring>=25           # API key storage in the macOS Keychain
+pypdf>=7.0            # reading PDFs

@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.DS_Store
+.env
+.claude/
+
+# The pre-2.0 CustomTkinter app, kept locally for reference only.
+legacy/

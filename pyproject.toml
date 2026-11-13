@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cognix"
+version = "2.0.0"
+description = "An always-listening voice assistant that controls your Mac. Local-first, with Claude when you want it."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+keywords = ["voice-assistant", "macos", "wake-word", "whisper", "claude", "lm-studio", "local-llm"]
+classifiers = [
+  "Operating System :: MacOS",
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+]
+dependencies = [
+  "anthropic>=2.8",
+  "openai>=3.50",
+  "faster-whisper>=1.2",
+  "sounddevice>=0.5",
+  "numpy>=2.0",
+  "pywebview>=6.2",
+  "keyring>=25",
+  "pypdf>=7.0",
+]
+
+[project.scripts]
+cognix = "cognix.app:main"
+
+[tool.setuptools]
+packages = ["cognix"]
+
+[tool.setuptools.package-data]
+cognix = ["web/*"]

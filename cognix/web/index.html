@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="cognix-token" content="__COGNIX_TOKEN__">
+  <meta name="color-scheme" content="dark">
+  <title>Cognix</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-phase="starting">
+  <div class="grain" aria-hidden="true"></div>
+
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M19.4 7.2A9 9 0 1 0 19.4 16.8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="2.6" fill="var(--ember)"/>
+        </svg>
+        <span class="brand-name">Cognix</span>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="engine" role="radiogroup" aria-label="Which model answers">
+          <button type="button" role="radio" data-engine="local" aria-checked="false" title="Private and offline, using LM Studio">
+            <i class="dot" data-dot="local"></i>Local
+          </button>
+          <button type="button" role="radio" data-engine="claude" aria-checked="false" title="Online, using the Claude API">
+            <i class="dot" data-dot="claude"></i>Claude
+          </button>
+        </div>
+        <button type="button" class="icon-btn" id="mic-toggle" aria-pressed="true" title="Turn the microphone off"></button>
+        <button type="button" class="icon-btn" id="new-chat" title="Start a new conversation"></button>
+        <button type="button" class="icon-btn" id="open-settings" title="Settings (⌘,)"></button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="stage" aria-label="Assistant status">
+        <button type="button" class="orb" id="orb" aria-label="Wake Cognix">
+          <canvas class="orb-glow" id="orb-glow" aria-hidden="true"></canvas>
+          <canvas class="orb-ring" id="orb-ring" aria-hidden="true"></canvas>
+        </button>
+        <div class="stage-text">
+          <h1 class="headline" id="headline" aria-live="polite">Waking up…</h1>
+          <p class="subline" id="subline"></p>
+        </div>
+
+        <div class="telemetry">
+          <div class="chip" id="chip-mic"><span class="k">Mic</span><span class="v">—</span></div>
+          <div class="chip" id="chip-stt"><span class="k">Speech</span><span class="v">—</span></div>
+          <button type="button" class="chip chip-btn" id="chip-engine" title="Change engine"><span class="k">Engine</span><span class="v">—</span></button>
+        </div>
+      </section>
+
+      <section class="talk" aria-label="Conversation">
+        <div class="thread" id="thread" tabindex="-1">
+          <div class="empty" id="empty">
+            <p class="empty-kicker">Try saying</p>
+            <h2 class="empty-title">“Hey Cognix…”</h2>
+            <ul class="suggestions" id="suggestions"></ul>
+            <p class="empty-note">Speech is recognised on this Mac. Nothing is recorded or sent anywhere until you say the wake phrase.</p>
+          </div>
+          <ol class="entries" id="entries"></ol>
+        </div>
+
+        <form class="composer" id="composer" autocomplete="off">
+          <textarea id="input" rows="1" placeholder="Type a request, or just say “Hey Cognix”" aria-label="Message Cognix"></textarea>
+          <kbd class="hint" id="composer-hint">⌘K</kbd>
+          <button type="submit" class="send" id="send" aria-label="Send"></button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <div class="scrim" id="scrim" hidden></div>
+  <aside class="sheet" id="settings" aria-label="Settings" aria-hidden="true" inert>
+    <header class="sheet-head">
+      <h2>Settings</h2>
+      <button type="button" class="icon-btn" id="close-settings" aria-label="Close settings"></button>
+    </header>
+
+    <div class="sheet-body">
+      <section class="group">
+        <h3>Engine</h3>
+        <p class="group-note">Who does the thinking. Switch any time from the top bar.</p>
+
+        <div class="card" data-card="local">
+          <label class="card-head">
+            <input type="radio" name="engine" value="local">
+            <span class="card-title">Local <em>LM Studio</em></span>
+            <span class="badge" id="local-badge">—</span>
+          </label>
+          <p class="card-note">Private and offline. Your requests never leave this Mac.</p>
+          <label class="field"><span>Model</span>
+            <select id="local-model"></select>
+          </label>
+          <label class="field"><span>Server address</span>
+            <input type="text" id="local-url" spellcheck="false" inputmode="url">
+          </label>
+          <p class="card-help" id="local-help"></p>
+        </div>
+
+        <div class="card" data-card="claude">
+          <label class="card-head">
+            <input type="radio" name="engine" value="claude">
+            <span class="card-title">Claude <em>Anthropic API</em></span>
+            <span class="badge" id="claude-badge">—</span>
+          </label>
+          <p class="card-note">Online. More capable, and can look things up on the web.</p>
+          <label class="field"><span>API key</span>
+            <span class="key-row">
+              <input type="password" id="api-key" placeholder="sk-ant-…" spellcheck="false" autocomplete="off">
+              <button type="button" class="btn" id="save-key">Save</button>
+            </span>
+          </label>
+          <p class="card-help" id="claude-help"></p>
+          <label class="field"><span>Model</span>
+            <select id="claude-model"></select>
+          </label>
+          <p class="card-help" id="claude-model-hint"></p>
+          <label class="switch-row">
+            <span><b>Web search</b><small>Let Claude search the web to answer questions.</small></span>
+            <input type="checkbox" class="switch" data-setting="claude_web_search">
+          </label>
+        </div>
+      </section>
+
+      <section class="group">
+        <h3>Listening</h3>
+        <label class="switch-row">
+          <span><b>Always listen for “Hey Cognix”</b><small>Runs on this Mac. Turn off to use typing only.</small></span>
+          <input type="checkbox" class="switch" data-setting="mic_enabled">
+        </label>
+        <label class="switch-row">
+          <span><b>Follow-up questions</b><small>Keep listening for a few seconds after each reply, no wake phrase needed.</small></span>
+          <input type="checkbox" class="switch" data-setting="follow_up">
+        </label>
+        <label class="switch-row">
+          <span><b>Wake sound</b><small>Play a soft chime when Cognix hears its name.</small></span>
+          <input type="checkbox" class="switch" data-setting="chime">
+        </label>
+        <label class="field"><span>Microphone</span>
+          <select id="mic-device"></select>
+        </label>
+        <p class="card-help" id="mic-help"></p>
+        <label class="field"><span>Speech recognition model</span>
+          <select id="stt-model"></select>
+        </label>
+        <p class="card-help">Larger models understand more accents and noise, and take longer per phrase.</p>
+      </section>
+
+      <section class="group">
+        <h3>Voice</h3>
+        <label class="switch-row">
+          <span><b>Speak replies</b><small>Read answers aloud as well as showing them.</small></span>
+          <input type="checkbox" class="switch" data-setting="speak">
+        </label>
+        <label class="field"><span>Voice</span>
+          <span class="key-row">
+            <select id="voice"></select>
+            <button type="button" class="btn" id="preview-voice">Preview</button>
+          </span>
+        </label>
+        <label class="field"><span>Speed <output id="rate-out"></output></span>
+          <input type="range" id="rate" min="120" max="300" step="5">
+        </label>
+      </section>
+
+      <section class="group">
+        <h3>Privacy</h3>
+        <label class="switch-row">
+          <span><b>Keep a history file</b><small>Saves your requests and replies to ~/.cognix/history.jsonl on this Mac.</small></span>
+          <input type="checkbox" class="switch" data-setting="save_history">
+        </label>
+        <p class="card-help">Audio is transcribed on-device and discarded unless it starts with the wake phrase. In Local mode nothing leaves your Mac. In Claude mode, your request and any file you ask about are sent to Anthropic.</p>
+      </section>
+
+      <p class="about" id="about"></p>
+    </div>
+  </aside>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+  <script src="app.js" defer></script>
+</body>
+</html>
