@@ -15,7 +15,7 @@ class ServerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         settings = config.Settings(Path(tempfile.mkdtemp()) / "config.json")
-        settings.update({"speak": False, "save_history": False})
+        settings.update({"local_auto": False, "speak": False, "save_history": False})
         cls.assistant = Assistant(settings, EventBus())    # not started: no mic, no model
         cls.server = CognixServer(cls.assistant, cls.assistant.bus)
         cls.server.start()

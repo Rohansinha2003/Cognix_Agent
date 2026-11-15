@@ -31,9 +31,10 @@ CLAUDE_MODELS = [
 STT_MODELS = ["tiny.en", "base.en", "small.en", "base", "small"]
 
 DEFAULTS = {
-    "engine": "local",                       # "local" (LM Studio) | "claude"
+    "engine": "local",                       # "local" (Bionic / LM Studio) | "claude"
     "local_url": "http://127.0.0.1:1234/v1",  # any OpenAI-compatible server
     "local_model": "",                       # "" = first model the server reports
+    "local_auto": True,                      # find Bionic / LM Studio on its own, and start it if needed
     "claude_model": "claude-opus-5-5",
     "claude_web_search": True,               # let Claude search the web for answers
     "mic_enabled": True,                     # always-on wake-word listening
@@ -51,6 +52,7 @@ _VALIDATORS = {
     "engine": lambda v: v in ("local", "claude"),
     "local_url": lambda v: isinstance(v, str) and v.startswith(("http://", "https://")),
     "local_model": lambda v: isinstance(v, str),
+    "local_auto": lambda v: isinstance(v, bool),
     "claude_model": lambda v: v in {m["id"] for m in CLAUDE_MODELS},
     "claude_web_search": lambda v: isinstance(v, bool),
     "mic_enabled": lambda v: isinstance(v, bool),

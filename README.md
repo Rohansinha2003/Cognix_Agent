@@ -28,7 +28,7 @@ Simple commands like that one work straight away, with no model connected. For e
 
 | Engine | Setup |
 |---|---|
-| **Local** | Open LM Studio, load a model that supports tool use (Qwen 2.5, Llama 3.1 and similar), and start the local server. Cognix finds it at `http://127.0.0.1:1234` on its own. |
+| **Local** | Use [Bionic](https://lmstudio.ai) or LM Studio (same engine) with a model that supports tool use (Qwen 2.5, Llama 3.1 and similar). Cognix reads Bionic's server settings, probes the usual ports (1234, Ollama's 11434, 8080, 1337, 8000), switches to whichever server is up, and starts Bionic's server for you if it isn't running. Turn this off with *Auto-detect* in Settings. |
 | **Claude** | Open Settings (⌘,), paste an [Anthropic API key](https://console.anthropic.com/) and choose Claude in the top bar. The key is stored in your macOS Keychain. |
 
 ## Things to say
@@ -106,7 +106,7 @@ Command-line options: `./run.sh --browser` opens the interface in your browser i
 | The **Mic** chip says "no access" | System Settings → Privacy & Security → Microphone → enable your terminal, then restart Cognix |
 | It does not react to "Hey Cognix" | Watch the ring: it should move when you speak. If it does but nothing wakes, try the `small.en` speech model in Settings |
 | You plugged in a different microphone | Cognix keeps the one it started with. Click the mic button off and on to switch |
-| "LM Studio isn't reachable" | Load a model in LM Studio and start the server from its Developer tab |
+| "The local model server isn't reachable" | Open Bionic, load a model and start the server from its Developer tab. If Bionic won't open at all, reinstall it (macOS may report its signature as broken) |
 | The local model never uses tools | Choose a model trained for tool use; small models often answer in text only |
 | Quitting apps, dark mode or music control fails | Allow the prompt macOS shows, or enable it under Privacy & Security → Automation |
 | No sound | Check your Mac's volume and that *Speak replies* is on |
@@ -114,7 +114,7 @@ Command-line options: `./run.sh --browser` opens the interface in your browser i
 ## Development
 
 ```bash
-.venv/bin/python -m unittest            # 58 tests, about 30 seconds
+.venv/bin/python -m unittest            # 63 tests, about 30 seconds
 .venv/bin/python tests/fake_llm.py 1234 # a scripted stand-in for LM Studio
 ```
 

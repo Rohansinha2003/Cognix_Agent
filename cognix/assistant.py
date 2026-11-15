@@ -19,7 +19,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from . import __version__, config, mac, tools
+from . import __version__, config, discovery, mac, tools
 from .brain import BrainError, Cancelled, ClaudeBrain, LocalBrain, TurnIO, local_status
 from .events import EventBus
 from .listener import MicListener
@@ -27,6 +27,7 @@ from .speech import Speaker, list_voices, play_chime
 from .stt import Transcriber
 from .wake import WAKE_PHRASE, find_wake, strip_wake
 
+MAX_WAKE_SECONDS = 8.0     # while asleep, speech longer than this is ignored without being transcribed
 AWAKE_SECONDS = 8.0        # how long Cognix waits for a command after the wake phrase
 FOLLOW_UP_SECONDS = 6.0    # ...and after a reply, when follow-up listening is on
 IDLE_PATIENCE_MS = 700     # pause that ends an utterance while waiting for the wake phrase
@@ -94,6 +95,7 @@ class Assistant:
         self._mic = {"state": "starting", "detail": ""}
         self._stt = {"state": "loading", "detail": ""}
         self._local = {"ok": False, "models": []}
+        self._local_started = 0.0       # when we last tried to launch Bionic ourselves
         self._entries: list = []
         self._transcript: list = []     # plain-text turns, used to seed a brain after an engine switch
         self._last_activity = time.monotonic()
@@ -149,6 +151,7 @@ class Assistant:
             "stt": dict(self._stt),
             "settings": s,
             "local": {"ok": self._local["ok"], "models": local_models,
+                      "server": discovery.label_for(s["local_url"]),
                       "model": (s["local_model"] if s["local_model"] in local_models
                                 else (local_models[0] if local_models else ""))},
             "claude": {"ready": config.claude_credentials_available(), "has_saved_key": bool(config.get_api_key()),
@@ -237,6 +240,8 @@ class Assistant:
     def _on_utterance(self, audio) -> None:
         awake = self._speech_awake or self._is_awake()
         self._speech_awake = False
+        if not awake and len(audio) > MAX_WAKE_SECONDS * 16000:
+            return  # conversation, TV, music: far too long to be "Hey Cognix, …", so it is not even transcribed
         try:
             self._audio_q.put_nowait((audio, awake))
         except queue.Full:
@@ -302,7 +307,7 @@ class Assistant:
         if awake:
             command = strip_wake(text)
             if not command:
-                self._wake(chime=False)            # just noise, or the wake phrase again: keep waiting
+                pass                               # just noise, or the wake phrase again: keep waiting, window unchanged
             elif command.lower().strip(" .!?") in _DISMISSALS:
                 self._sleep()
             else:
@@ -507,11 +512,25 @@ class Assistant:
     def _watch_local(self) -> None:
         while not self._closing.is_set():
             status = local_status(self.settings.get("local_url"))
+            if self.settings.get("local_auto") and not (status["ok"] and status["models"]):
+                status = self._find_local(status)
             if status != self._local:
                 self._local = status
                 self._emit_status()
             self._closing.wait(5.0)
 
+    def _find_local(self, current: dict) -> dict:
+        """Look for Bionic, LM Studio or another local server; start Bionic if none is running."""
+        url, found = discovery.detect(self.settings.get("local_url"), local_status)
+        if not url and self.settings.get("engine") == "local" and discovery.can_start() \
+                and time.monotonic() - self._local_started > 600:
+            self._local_started = time.monotonic()
+            self._notice("Starting Bionic's local server…", "info")
+            if discovery.start_server():
+                url, found = discovery.detect(self.settings.get("local_url"), local_status)
+        if url and url != self.settings.get("local_url"):
+            self.settings.update({"local_url": url})
+        return found if url else current
 
 def _input_devices() -> list:
     try:
