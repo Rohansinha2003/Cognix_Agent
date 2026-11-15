@@ -24,7 +24,7 @@
 
       <div class="topbar-actions">
         <div class="engine" role="radiogroup" aria-label="Which model answers">
-          <button type="button" role="radio" data-engine="local" aria-checked="false" title="Private and offline, using LM Studio">
+          <button type="button" role="radio" data-engine="local" aria-checked="false" title="Private and offline, using Bionic or LM Studio">
             <i class="dot" data-dot="local"></i>Local
           </button>
           <button type="button" role="radio" data-engine="claude" aria-checked="false" title="Online, using the Claude API">
@@ -90,7 +90,7 @@
         <div class="card" data-card="local">
           <label class="card-head">
             <input type="radio" name="engine" value="local">
-            <span class="card-title">Local <em>LM Studio</em></span>
+            <span class="card-title">Local <em>Bionic · LM Studio</em></span>
             <span class="badge" id="local-badge">—</span>
           </label>
           <p class="card-note">Private and offline. Your requests never leave this Mac.</p>
@@ -99,6 +99,10 @@
           </label>
           <label class="field"><span>Server address</span>
             <input type="text" id="local-url" spellcheck="false" inputmode="url">
+          </label>
+          <label class="switch-row">
+            <span><b>Auto-detect</b><small>Find Bionic or LM Studio on its own, and start Bionic if it isn't running.</small></span>
+            <input type="checkbox" class="switch" data-setting="local_auto">
           </label>
           <p class="card-help" id="local-help"></p>
         </div>

@@ -378,7 +378,7 @@ class LocalBrain:
         if wanted and wanted in ids:
             return wanted
         if not chat:
-            raise BrainError("LM Studio is running but no model is loaded. Load one, then try again.")
+            raise BrainError("The local server is running but has no model. Download or load one, then try again.")
         return chat[0]
 
     def _trimmed(self) -> list:
@@ -493,7 +493,7 @@ class LocalBrain:
         raise BrainError("That took more steps than I allow for one request. Try breaking it up.")
 
 
-_LOCAL_DOWN = ("LM Studio isn't reachable. Open LM Studio, load a model and start its local server, "
+_LOCAL_DOWN = ("The local model server isn't reachable. Open Bionic (or LM Studio), load a model and start its server, "
                "or switch to Claude in the top bar.")
 
 

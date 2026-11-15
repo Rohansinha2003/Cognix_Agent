@@ -27,6 +27,27 @@ _GLUED_RE = re.compile(rf"^(?:hey|hay|he|hi|ok|okay)({_NAME})$")  # "haykognix"
 _TOKEN_RE = re.compile(r"[a-z0-9']+")
 
 
+# Real words that sound close but are not the name.
+_NOT_THE_NAME = {"cognac", "cognition", "cognitions", "cognizant", "cognizance", "connect", "connects"}
+
+
+def _skeleton(word: str) -> str:
+    """The consonant skeleton of a word, so "Cognitive", "Konix" and "Cog Nick" can be compared by sound."""
+    word = re.sub(r"[^a-z]", "", word.lower())
+    word = word.replace("ck", "k").replace("x", "ks")
+    word = re.sub(r"[cq]", "k", word)
+    word = re.sub(r"[aeiouyhw]", "", word)
+    return re.sub(r"(.)\1+", r"\1", word)
+
+
+def _sounds_like_name(word: str) -> bool:
+    """Loose match, only trusted right after a greeting ("hey ___")."""
+    if not word or word in _NOT_THE_NAME:
+        return False
+    skel = _skeleton(word)
+    return bool(re.fullmatch(r"kgs?n[a-z]{0,2}", skel) and len(skel) <= 6 or re.fullmatch(r"kn[ks]s?", skel))
+
+
 @dataclass(frozen=True)
 class WakeMatch:
     command: str   # what was said after the wake phrase ("" if nothing)
@@ -51,6 +72,12 @@ def find_wake(text: str) -> WakeMatch | None:
             if _NAME_RE.match(tok + toks[i + 1][0]):
                 is_name = True
                 span_end = toks[i + 1][2]
+        if not is_name and i > 0 and toks[i - 1][0] in GREETINGS:
+            # "Hey Cognitive" / "Hey Cog Nick" / "Hey Konix": trust a near match right after a greeting.
+            if _sounds_like_name(tok):
+                is_name = True
+            elif i + 1 < len(toks) and _sounds_like_name(tok + toks[i + 1][0]):
+                is_name, span_end = True, toks[i + 1][2]
         if not is_name:
             continue
         greeted = glued or (i > 0 and toks[i - 1][0] in GREETINGS)

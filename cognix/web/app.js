@@ -236,7 +236,7 @@
   // ---------------------------------------------------------------- phase / stage
   function engineName() {
     if (!status) return "";
-    return status.settings.engine === "claude" ? "Claude" : "LM Studio";
+    return status.settings.engine === "claude" ? "Claude" : (status.local.server || "Bionic");
   }
 
   function renderPhase(detail) {
@@ -299,9 +299,9 @@
       const label = (status.claude.models.find((m) => m.id === s.claude_model) || {}).label || s.claude_model;
       setChip("chip-engine", status.claude.ready ? label : "Claude · add API key", status.claude.ready ? "ok" : "warn");
     } else if (!status.local.ok) {
-      setChip("chip-engine", "LM Studio · not running", "warn");
+      setChip("chip-engine", `${status.local.server || "Bionic"} · not running`, "warn");
     } else if (!status.local.model) {
-      setChip("chip-engine", "LM Studio · no model loaded", "warn");
+      setChip("chip-engine", `${status.local.server || "Bionic"} · no model`, "warn");
     } else {
       setChip("chip-engine", status.local.model, "ok");
     }
@@ -548,7 +548,7 @@
     fillSelect($("local-model"), [["", models.length ? "Automatic (first loaded model)" : "No models found"], ...models], s.local_model);
     if (!typingUrl) $("local-url").value = s.local_url;
     $("local-help").textContent = status.local.ok ? "" :
-      "Open LM Studio, load a model, then start the server from the Developer tab. Cognix reconnects on its own.";
+      "Open Bionic (or LM Studio), download a model and start the server. Cognix finds it on its own and reconnects.";
 
     // Claude
     const cb = $("claude-badge");

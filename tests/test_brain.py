@@ -110,7 +110,7 @@ class LocalBrainTests(unittest.TestCase):
         brain = LocalBrain(settings(local_url="http://127.0.0.1:9/v1"))
         with self.assertRaises(BrainError) as ctx:
             brain.respond("hello", Recorder())
-        self.assertIn("LM Studio", str(ctx.exception))
+        self.assertIn("Bionic", str(ctx.exception))
         self.assertEqual(local_status("http://127.0.0.1:9/v1"), {"ok": False, "models": []})
 
 

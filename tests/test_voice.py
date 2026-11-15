@@ -93,7 +93,7 @@ class VoicePipelineTests(unittest.TestCase):
         cls.llm = FakeLLM(script).start()
         cls.tmp = tempfile.mkdtemp()
         settings = config.Settings(Path(cls.tmp) / "config.json")
-        settings.update({"local_url": cls.llm.url, "speak": False, "chime": False, "save_history": False})
+        settings.update({"local_auto": False, "local_url": cls.llm.url, "speak": False, "chime": False, "save_history": False})
         cls.bus = EventBus()
         cls.events = cls.bus.subscribe()
         cls.assistant = Assistant(settings, cls.bus)
@@ -204,7 +204,7 @@ class VoicePipelineTests(unittest.TestCase):
         try:
             self.assistant.send_text("tell me a joke")
             self.wait_idle()
-            self.assertIn("LM Studio", self.entries("notice")[0]["text"])
+            self.assertIn("Bionic", self.entries("notice")[0]["text"])
         finally:
             self.assistant.apply_settings({"local_url": self.llm.url})
 
